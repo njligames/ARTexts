@@ -9,10 +9,15 @@
 import UIKit
 import SpriteKit
 import ARKit
+import CoreLocation
 
 class ViewController: UIViewController, ARSKViewDelegate {
     
     @IBOutlet var sceneView: ARSKView!
+    
+    var locationManager: CLLocationManager!
+    var currentCLLocation: CLLocation!
+    var currentCameraLocation: matrix_float4x4!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,6 +33,15 @@ class ViewController: UIViewController, ARSKViewDelegate {
         if let scene = SKScene(fileNamed: "Scene") {
             sceneView.presentScene(scene)
         }
+        
+        locationManager = CLLocationManager()
+        locationManager.delegate = self
+        locationManager.desiredAccuracy = kCLLocationAccuracyBestForNavigation
+        
+        locationManager.requestWhenInUseAuthorization()
+        locationManager.requestAlwaysAuthorization()
+        
+        locationManager.startUpdatingLocation()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -38,6 +52,7 @@ class ViewController: UIViewController, ARSKViewDelegate {
         
         // Run the view's session
         sceneView.session.run(configuration)
+        sceneView.session.delegate = self
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -59,6 +74,9 @@ class ViewController: UIViewController, ARSKViewDelegate {
         let labelNode = SKLabelNode(text: "👾")
         labelNode.horizontalAlignmentMode = .center
         labelNode.verticalAlignmentMode = .center
+        
+        print(anchor.transform)
+        
         return labelNode;
     }
     
@@ -74,6 +92,29 @@ class ViewController: UIViewController, ARSKViewDelegate {
     
     func sessionInterruptionEnded(_ session: ARSession) {
         // Reset tracking and/or remove existing anchors if consistent tracking is required
+        
+    }
+}
+
+extension ViewController:ARSessionDelegate
+{
+    func session(_ session: ARSession,
+                 didUpdate frame: ARFrame)
+    {
+        //The camera Transform...
+        currentCameraLocation = frame.camera.transform
+    }
+}
+
+extension ViewController:CLLocationManagerDelegate
+{
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        
+        currentCLLocation = locations[0]
+        if((currentCLLocation) != nil)
+        {
+            
+        }
         
     }
 }

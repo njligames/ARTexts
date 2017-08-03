@@ -16,6 +16,7 @@
 		C16E8E5E1F33E2F2000D5CB1 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C16E8E5C1F33E2F2000D5CB1 /* LaunchScreen.storyboard */; };
 		C16E8E691F33E2F2000D5CB1 /* ARTexts_iosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C16E8E681F33E2F2000D5CB1 /* ARTexts_iosTests.swift */; };
 		C16E8E741F33E2F2000D5CB1 /* ARTexts_iosUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C16E8E731F33E2F2000D5CB1 /* ARTexts_iosUITests.swift */; };
+		C16E8E831F33E8DF000D5CB1 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C16E8E821F33E8DF000D5CB1 /* CoreLocation.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -51,6 +52,7 @@
 		C16E8E6F1F33E2F2000D5CB1 /* ARTexts-iosUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ARTexts-iosUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C16E8E731F33E2F2000D5CB1 /* ARTexts_iosUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARTexts_iosUITests.swift; sourceTree = "<group>"; };
 		C16E8E751F33E2F2000D5CB1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C16E8E821F33E8DF000D5CB1 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +60,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C16E8E831F33E8DF000D5CB1 /* CoreLocation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -85,6 +88,7 @@
 				C16E8E671F33E2F2000D5CB1 /* ARTexts-iosTests */,
 				C16E8E721F33E2F2000D5CB1 /* ARTexts-iosUITests */,
 				C16E8E4D1F33E2F2000D5CB1 /* Products */,
+				C16E8E811F33E8DF000D5CB1 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -129,6 +133,14 @@
 				C16E8E751F33E2F2000D5CB1 /* Info.plist */,
 			);
 			path = "ARTexts-iosUITests";
+			sourceTree = "<group>";
+		};
+		C16E8E811F33E8DF000D5CB1 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				C16E8E821F33E8DF000D5CB1 /* CoreLocation.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
