@@ -68,6 +68,8 @@ class ViewController: UIViewController, ARSKViewDelegate {
 //        self.deleteAText("59895a0b29db476df8f0a158", arText: {(success:Bool) in
 //            print(success)
 //        })
+        
+        
     }
     
     
@@ -134,6 +136,340 @@ class ViewController: UIViewController, ARSKViewDelegate {
         
     }
     
+    func listAllSessions(arSession: @escaping (_ succeeded:Bool, _ texts:[String:Any]) -> ())
+    {
+        let url = URL(string: "http://localhost:3000/sessions")!
+        //create the session object
+        let session = URLSession.shared
+        
+        //now create the URLRequest object using the url object
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET" //set http method as POST
+        request.addValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+        
+        let task = session.dataTask(with: request) {
+            (data, response, error) in
+            // check for any errors
+            guard error == nil else {
+                arSession(false, [:])
+                print("error calling GET on /texts")
+                print(error!)
+                return
+            }
+            // make sure we got data
+            guard let responseData = data else {
+                arSession(false, [:])
+                print("Error: did not receive data")
+                return
+            }
+            // parse the result as JSON, since that's what the API provides
+            do {
+                guard let texts = try JSONSerialization.jsonObject(with: responseData, options: [])
+                    as? [String: Any] else {
+                        arSession(false, [:])
+                        print("error trying to convert data to JSON")
+                        return
+                }
+                arSession(true, texts)
+            } catch  {
+                print("error trying to convert data to JSON")
+                return
+            }
+        }
+        task.resume()
+    }
+    func createASession(_ latitude:Double, _ longitude:Double, _ altitude:Double, _ horizontalAccuracy:Double, _ verticalAccuracy:Double, _ course:Double, _ speed:Double, arSession: @escaping (_ id:String, _ succeeded:Bool) -> ())
+    {
+        let url = URL(string: "http://localhost:3000/sessions")!
+        //create the session object
+        let session = URLSession.shared
+        
+        //now create the URLRequest object using the url object
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST" //set http method as POST
+        request.addValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+        
+        let postString = "latitude=\(latitude)&longitude=\(longitude)&altitude=\(altitude)&horizontalAccuracy=\(horizontalAccuracy)&verticalAccuracy=\(verticalAccuracy)&course=\(course)&speed=\(speed)"
+        request.httpBody = postString.data(using: .utf8)
+        
+        let task = session.dataTask(with: request) {
+            (data, response, error) in
+            // check for any errors
+            guard error == nil else {
+                arSession("", false)
+                print("error calling GET on /texts")
+                print(error!)
+                return
+            }
+            // make sure we got data
+            guard let responseData = data else {
+                arSession("", false)
+                print("Error: did not receive data")
+                return
+            }
+            // parse the result as JSON, since that's what the API provides
+            do {
+                guard let session = try JSONSerialization.jsonObject(with: responseData, options: [])
+                    as? [String: Any] else {
+                        arSession("", false)
+                        print("error trying to convert data to JSON")
+                        return
+                }
+                
+                // now we have the todo
+                // let's just print it to prove we can access it
+                print("The todo is: " + session.description)
+                
+                // the todo object is a dictionary
+                // so we just access the title using the "title" key
+                // so check for a title and print it if we have one
+                guard let _id = session["_id"] as? String else {
+                    print("Could not get todo title from JSON")
+                    return
+                }
+                //                print("The textId is: " + _id)
+                
+                arSession(_id, true)
+                
+            } catch  {
+                arSession("", false)
+                print("error trying to convert data to JSON")
+                return
+            }
+        }
+        task.resume()
+    }
+    
+    func readASession(_ id:String, arSession: @escaping (_ latitude:Double, _ longitude:Double, _ altitude:Double, _ horizontalAccuracy:Double, _ verticalAccuracy:Double, _ course:Double, _ speed:Double, _ succeeded:Bool) -> ())
+    {
+        let url = URL(string: "http://localhost:3000/sessions" + "/" + id)!
+        //create the session object
+        let session = URLSession.shared
+        
+        //now create the URLRequest object using the url object
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET" //set http method as POST
+        
+        let task = session.dataTask(with: request) {
+            (data, response, error) in
+            // check for any errors
+            guard error == nil else {
+                arSession(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false)
+                print("error calling GET on /sessions")
+                print(error!)
+                return
+            }
+            // make sure we got data
+            guard let responseData = data else {
+                arSession(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false)
+                print("Error: did not receive data")
+                return
+            }
+            
+            // parse the result as JSON, since that's what the API provides
+            do {
+                guard let _arSession = try JSONSerialization.jsonObject(with: responseData, options: [])
+                    as? [String: Any] else {
+                        arSession(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false)
+                        print("error trying to convert data to JSON")
+                        return
+                }
+                
+                
+                // now we have the todo
+                // let's just print it to prove we can access it
+                print("The todo is: " + _arSession.description)
+                
+                // the todo object is a dictionary
+                // so we just access the title using the "title" key
+                // so check for a title and print it if we have one
+                guard let latitude = _arSession["latitude"] as? Double else {
+                    arSession(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false)
+                    print("Could not get todo title from JSON")
+                    return
+                }
+                
+                guard let longitude = _arSession["longitude"] as? Double else {
+                    arSession(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false)
+                    print("Could not get todo title from JSON")
+                    return
+                }
+                
+                guard let altitude = _arSession["altitude"] as? Double else {
+                    arSession(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false)
+                    print("Could not get todo title from JSON")
+                    return
+                }
+                
+                guard let horizontalAccuracy = _arSession["horizontalAccuracy"] as? Double else {
+                    arSession(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false)
+                    print("Could not get todo title from JSON")
+                    return
+                }
+                
+                guard let verticalAccuracy = _arSession["verticalAccuracy"] as? Double else {
+                    arSession(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false)
+                    print("Could not get todo title from JSON")
+                    return
+                }
+                
+                guard let course = _arSession["course"] as? Double else {
+                    arSession(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false)
+                    print("Could not get todo title from JSON")
+                    return
+                }
+                
+                guard let speed = _arSession["speed"] as? Double else {
+                    arSession(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false)
+                    print("Could not get todo title from JSON")
+                    return
+                }
+                
+//                guard let timestamp = _arSession["timestamp"] as? Date else {
+//                    arSession(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Date(), false)
+//                    print("Could not get todo title from JSON")
+//                    return
+//                }
+                
+//                let numberFormatter = NumberFormatter()
+                
+                /*
+                 _ latitude:Double, _ longitude:Double, _ altitude:Double, _ horizontalAccuracy:Double, _ verticalAccuracy:Double, _ course:Double, _ speed:Double, _ timestamp:Date
+                 */
+                
+                arSession(latitude,
+                          longitude,
+                          altitude,
+                          horizontalAccuracy,
+                          verticalAccuracy,
+                          course,
+                          0,
+                          true)
+            } catch  {
+                arSession(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false)
+                print("error trying to convert data to JSON")
+                return
+            }
+        }
+        task.resume()
+    }
+    
+    func updateASession(_ id:String, _ latitude:Double, _ longitude:Double, _ altitude:Double, _ horizontalAccuracy:Double, _ verticalAccuracy:Double, _ course:Double, _ speed:Double, arSession: @escaping (_ succeeded:Bool) -> ())
+    {
+        let url = URL(string: "http://localhost:3000/sessions" + "/" + id)!
+        //create the session object
+        let session = URLSession.shared
+        
+        //now create the URLRequest object using the url object
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.addValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+        
+        let postString = "latitude=\(latitude)&longitude=\(longitude)&altitude=\(altitude)&horizontalAccuracy=\(horizontalAccuracy)&verticalAccuracy=\(verticalAccuracy)&course=\(course)&speed=\(speed)"
+        request.httpBody = postString.data(using: .utf8)
+        
+        let task = session.dataTask(with: request) {
+            (data, response, error) in
+            // check for any errors
+            guard error == nil else {
+                arSession(false)
+                print("error calling GET on /texts")
+                print(error!)
+                return
+            }
+            // make sure we got data
+            guard let responseData = data else {
+                arSession(false)
+                print("Error: did not receive data")
+                return
+            }
+            // parse the result as JSON, since that's what the API provides
+            do {
+                guard let text = try JSONSerialization.jsonObject(with: responseData, options: [])
+                    as? [String: Any] else {
+                        arSession(false)
+                        print("error trying to convert data to JSON")
+                        return
+                }
+                
+                // now we have the todo
+                // let's just print it to prove we can access it
+                //                print("The todo is: " + text.description)
+                
+                // the todo object is a dictionary
+                // so we just access the title using the "title" key
+                // so check for a title and print it if we have one
+                guard (text["_id"] as? String) != nil else {
+                    arSession(false)
+                    print("Could not get todo title from JSON")
+                    return
+                }
+                //                print("The textId is: " + _id)
+                
+                guard (text["Created_date"] as? String) != nil else {
+                    arSession(false)
+                    print("Could not get todo title from JSON")
+                    return
+                }
+                
+                //                print("The Created_date is: " + Created_date)
+                arSession(true)
+            } catch  {
+                arSession(false)
+                print("error trying to convert data to JSON")
+                return
+            }
+        }
+        task.resume()
+    }
+    
+    func deleteASession(_ id:String, arSession: @escaping (_ succeeded:Bool) -> ())
+    {
+        let url = URL(string: "http://localhost:3000/sessions" + "/" + id)!
+        //create the session object
+        let session = URLSession.shared
+        
+        //now create the URLRequest object using the url object
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE" //set http method as POST
+        
+        let task = session.dataTask(with: request) {
+            (data, response, error) in
+            // check for any errors
+            guard error == nil else {
+                arSession(false)
+                print("error calling GET on /texts")
+                print(error!)
+                return
+            }
+            // make sure we got data
+            guard let responseData = data else {
+                arSession(false)
+                print("Error: did not receive data")
+                return
+            }
+            // parse the result as JSON, since that's what the API provides
+            do {
+                guard let text = try JSONSerialization.jsonObject(with: responseData, options: [])
+                    as? [String: Any] else {
+                        arSession(false)
+                        print("error trying to convert data to JSON")
+                        return
+                }
+                // now we have the todo
+                // let's just print it to prove we can access it
+                print("The todo is: " + text.description)
+                
+                arSession(true)
+            } catch  {
+                arSession(false)
+                print("error trying to convert data to JSON")
+                return
+            }
+        }
+        task.resume()
+    }
+    
     func startRemoteARSession()
     {
         // Create a session configuration
@@ -178,10 +514,32 @@ class ViewController: UIViewController, ARSKViewDelegate {
             return
         }
         
-        guard let timestamp:Date = self.currentCLLocation?.timestamp else {
-            print("Error: cannot create URL")
-            return
+//        guard let timestamp:Date = self.currentCLLocation?.timestamp else {
+//            print("Error: cannot create URL")
+//            return
+//        }
+        
+        
+        let defaults = UserDefaults.standard
+        if let sessionId = defaults.string(forKey: "sessionId")
+        {
+            self.readASession(sessionId, arSession: {(latitude:Double, longitude:Double, altitude:Double, horizontalAccuracy:Double, verticalAccuracy:Double, course:Double, speed:Double, success:Bool) in
+                
+
+            })
         }
+        else
+        {
+            self.createASession(latitude, longitude, altitude, horizontalAccuracy, verticalAccuracy, course, speed, arSession: {(id:String, success:Bool) in
+                
+                defaults.setValue(id, forKey: "sessionId")
+                defaults.synchronize()
+                
+                
+
+            })
+        }
+        
         
 // TODO: - Send the current GPS location to the server.
 // The RESTful response should be the stored gps location if there was a previous session or null if there is no session.
@@ -276,55 +634,64 @@ class ViewController: UIViewController, ARSKViewDelegate {
         transformString += ","
         transformString += transform.columns.3.w.description
         
-        let postString = "transform=\(transformString)&text=\(text)"
-        request.httpBody = postString.data(using: .utf8)
-        
-        let task = session.dataTask(with: request) {
-            (data, response, error) in
-            // check for any errors
-            guard error == nil else {
-                arText("", false)
-                print("error calling GET on /texts")
-                print(error!)
-                return
-            }
-            // make sure we got data
-            guard let responseData = data else {
-                arText("", false)
-                print("Error: did not receive data")
-                return
-            }
-            // parse the result as JSON, since that's what the API provides
-            do {
-                guard let text = try JSONSerialization.jsonObject(with: responseData, options: [])
-                    as? [String: Any] else {
-                        arText("", false)
-                        print("error trying to convert data to JSON")
-                        return
-                }
-                
-                // now we have the todo
-                // let's just print it to prove we can access it
-//                print("The todo is: " + text.description)
-                
-                // the todo object is a dictionary
-                // so we just access the title using the "title" key
-                // so check for a title and print it if we have one
-                guard let _id = text["_id"] as? String else {
-                    print("Could not get todo title from JSON")
+        let defaults = UserDefaults.standard
+        if let sessionId = defaults.string(forKey: "sessionId")
+        {
+            let postString = "transform=\(transformString)&text=\(text)&sessionId=\(sessionId)"
+            request.httpBody = postString.data(using: .utf8)
+            
+            let task = session.dataTask(with: request) {
+                (data, response, error) in
+                // check for any errors
+                guard error == nil else {
+                    arText("", false)
+                    print("error calling GET on /texts")
+                    print(error!)
                     return
                 }
-//                print("The textId is: " + _id)
-                
-                arText(_id, true)
-                
-            } catch  {
-                arText("", false)
-                print("error trying to convert data to JSON")
-                return
+                // make sure we got data
+                guard let responseData = data else {
+                    arText("", false)
+                    print("Error: did not receive data")
+                    return
+                }
+                // parse the result as JSON, since that's what the API provides
+                do {
+                    guard let text = try JSONSerialization.jsonObject(with: responseData, options: [])
+                        as? [String: Any] else {
+                            arText("", false)
+                            print("error trying to convert data to JSON")
+                            return
+                    }
+                    
+                    // now we have the todo
+                    // let's just print it to prove we can access it
+                    //                print("The todo is: " + text.description)
+                    
+                    // the todo object is a dictionary
+                    // so we just access the title using the "title" key
+                    // so check for a title and print it if we have one
+                    guard let _id = text["_id"] as? String else {
+                        print("Could not get todo title from JSON")
+                        return
+                    }
+                    //                print("The textId is: " + _id)
+                    
+                    arText(_id, true)
+                    
+                } catch  {
+                    arText("", false)
+                    print("error trying to convert data to JSON")
+                    return
+                }
             }
+            task.resume()
         }
-        task.resume()
+        else
+        {
+            arText("", false)
+        }
+        
     }
     
     func readAText(_ id:String, arText: @escaping (_ text:String, _ transform: matrix_float4x4, _ succeeded:Bool) -> ())
@@ -364,44 +731,65 @@ class ViewController: UIViewController, ARSKViewDelegate {
                 // let's just print it to prove we can access it
 //                print("The todo is: " + _arText.description)
                 
-                // the todo object is a dictionary
-                // so we just access the title using the "title" key
-                // so check for a title and print it if we have one
-                guard let text = _arText["text"] as? String else {
+                let defaults = UserDefaults.standard
+                if let sessionId = defaults.string(forKey: "sessionId")
+                {
+                    guard let _sessionId = _arText["sessionId"] as? String else {
+                        arText("", matrix_float4x4(diagonal: float4(1.0)), false)
+                        print("Could not get todo title from JSON")
+                        return
+                    }
+                    
+                    if(sessionId == _sessionId)
+                    {
+                        // the todo object is a dictionary
+                        // so we just access the title using the "title" key
+                        // so check for a title and print it if we have one
+                        guard let text = _arText["text"] as? String else {
+                            arText("", matrix_float4x4(diagonal: float4(1.0)), false)
+                            print("Could not get todo title from JSON")
+                            return
+                        }
+                        //                print("The text is: " + text)
+                        
+                        guard let transform = _arText["transform"] as? String else {
+                            arText(text, matrix_float4x4(diagonal: float4(1.0)), false)
+                            print("Could not get todo title from JSON")
+                            return
+                        }
+                        //                print("The transform is: " + transform)
+                        let transformComponents = transform.components(separatedBy: ",")
+                        
+                        let numberFormatter = NumberFormatter()
+                        
+                        let t = matrix_float4x4(float4(x: (numberFormatter.number(from: transformComponents[0])?.floatValue)!,
+                                                       y: (numberFormatter.number(from: transformComponents[1])?.floatValue)!,
+                                                       z: (numberFormatter.number(from: transformComponents[2])?.floatValue)!,
+                                                       w: (numberFormatter.number(from: transformComponents[3])?.floatValue)!),
+                                                float4(x: (numberFormatter.number(from: transformComponents[4])?.floatValue)!,
+                                                       y: (numberFormatter.number(from: transformComponents[5])?.floatValue)!,
+                                                       z: (numberFormatter.number(from: transformComponents[6])?.floatValue)!,
+                                                       w: (numberFormatter.number(from: transformComponents[7])?.floatValue)!),
+                                                float4(x: (numberFormatter.number(from: transformComponents[8])?.floatValue)!,
+                                                       y: (numberFormatter.number(from: transformComponents[9])?.floatValue)!,
+                                                       z: (numberFormatter.number(from: transformComponents[10])?.floatValue)!,
+                                                       w: (numberFormatter.number(from: transformComponents[11])?.floatValue)!),
+                                                float4(x: (numberFormatter.number(from: transformComponents[12])?.floatValue)!,
+                                                       y: (numberFormatter.number(from: transformComponents[13])?.floatValue)!,
+                                                       z: (numberFormatter.number(from: transformComponents[14])?.floatValue)!,
+                                                       w: (numberFormatter.number(from: transformComponents[15])?.floatValue)!))
+                        
+                        arText(text, t, true)
+                    }
+                    else
+                    {
+                        arText("", matrix_float4x4(diagonal: float4(1.0)), false)
+                    }
+                }
+                else
+                {
                     arText("", matrix_float4x4(diagonal: float4(1.0)), false)
-                    print("Could not get todo title from JSON")
-                    return
                 }
-//                print("The text is: " + text)
-                
-                guard let transform = _arText["transform"] as? String else {
-                    arText(text, matrix_float4x4(diagonal: float4(1.0)), false)
-                    print("Could not get todo title from JSON")
-                    return
-                }
-//                print("The transform is: " + transform)
-                let transformComponents = transform.components(separatedBy: ",")
-                
-                let numberFormatter = NumberFormatter()
-                
-                let t = matrix_float4x4(float4(x: (numberFormatter.number(from: transformComponents[0])?.floatValue)!,
-                                       y: (numberFormatter.number(from: transformComponents[1])?.floatValue)!,
-                                       z: (numberFormatter.number(from: transformComponents[2])?.floatValue)!,
-                                       w: (numberFormatter.number(from: transformComponents[3])?.floatValue)!),
-                                float4(x: (numberFormatter.number(from: transformComponents[4])?.floatValue)!,
-                                       y: (numberFormatter.number(from: transformComponents[5])?.floatValue)!,
-                                       z: (numberFormatter.number(from: transformComponents[6])?.floatValue)!,
-                                       w: (numberFormatter.number(from: transformComponents[7])?.floatValue)!),
-                                float4(x: (numberFormatter.number(from: transformComponents[8])?.floatValue)!,
-                                       y: (numberFormatter.number(from: transformComponents[9])?.floatValue)!,
-                                       z: (numberFormatter.number(from: transformComponents[10])?.floatValue)!,
-                                       w: (numberFormatter.number(from: transformComponents[11])?.floatValue)!),
-                                float4(x: (numberFormatter.number(from: transformComponents[12])?.floatValue)!,
-                                       y: (numberFormatter.number(from: transformComponents[13])?.floatValue)!,
-                                       z: (numberFormatter.number(from: transformComponents[14])?.floatValue)!,
-                                       w: (numberFormatter.number(from: transformComponents[15])?.floatValue)!))
-                
-                arText(text, t, true)
             } catch  {
                 arText("", matrix_float4x4(diagonal: float4(1.0)), false)
                 print("error trying to convert data to JSON")
@@ -768,7 +1156,7 @@ extension ViewController:CLLocationManagerDelegate
         
         if(startARSession)
         {
-            startRemoteARSession()
+            self.startRemoteARSession()
         }
     }
 }
